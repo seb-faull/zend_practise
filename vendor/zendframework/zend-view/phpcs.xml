@@ -5,5 +5,5 @@
     <!-- Paths to check -->
     <file>src</file>
     <file>test</file>
-    <exclude-pattern>*/_files/*</exclude-pattern>
+    <exclude-pattern>*/_templates/*</exclude-pattern>
 </ruleset>

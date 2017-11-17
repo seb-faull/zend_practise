@@ -13,7 +13,6 @@ class ComposerStaticInite06d64a0f206e5c5d3750f30c5197a89
             'Zend\\Validator\\' => 15,
             'Zend\\Uri\\' => 9,
             'Zend\\Stdlib\\' => 12,
-            'Zend\\SkeletonInstaller\\' => 23,
             'Zend\\ServiceManager\\' => 20,
             'Zend\\Router\\' => 12,
             'Zend\\Mvc\\' => 9,
@@ -57,10 +56,6 @@ class ComposerStaticInite06d64a0f206e5c5d3750f30c5197a89
         'Zend\\Stdlib\\' => 
         array (
             0 => __DIR__ . '/..' . '/zendframework/zend-stdlib/src',
-        ),
-        'Zend\\SkeletonInstaller\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/zendframework/zend-skeleton-installer/src',
         ),
         'Zend\\ServiceManager\\' => 
         array (
