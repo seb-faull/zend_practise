@@ -19,11 +19,13 @@ class IndexController extends AbstractActionController
         $form = new Add();
 
         if ($this->request->isPost()) {
+            $blogPost = new Post();
+            $form->bind($blogPost);
             $form->setInputFilter(new AddPost());
             $form->setData($this->request->getPost());
 
             if ($form->isValid()) {
-                $data = $form->getData();
+
                 /**
                  *  @ToDo Save post here
                  */
