@@ -13,16 +13,30 @@ class Add extends Form
     {
         parent:: __construct('add');
 
+        // Text Field
         $title = new Element\Text('title');
         $title->setLabel('Title');
         $title->setAttribute('class', 'form-control');
 
+        // Url Slug
         $slug = new Element\Text('slug');
         $slug->setLabel('Slug');
         $slug->setAttribute('class', 'form-control');
 
+        // Text Area
         $content = new Element\Textarea('content');
         $content->setLabel('Content');
         $content->setAttribute('class', 'form-control');
+
+        // Dropdown Selector
+        $category = new Element\Select('category');
+        $category->setLabel('Category');
+        $category->setAttribute('class', 'form-control');
+        $category->setValueOptions(array(
+            1 => 'PHP',
+            2 => 'Zend Framework',
+            3 => 'MySQL',
+
+        ));
     }
 }
