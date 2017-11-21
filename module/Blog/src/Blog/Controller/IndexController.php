@@ -11,4 +11,21 @@ class IndexController extends AbstractActionController
     {
         return new ViewModel();
     }
-} 
+
+    public function addAction()
+    {
+        $form = new Add();
+
+        if ($this->request->isPost()) {
+            $form->setData($this->request->getPost());
+
+            //* @ToDo Save Blog Post
+
+        }
+
+        return new ViewModel(array(
+            'form' => $form,
+        ));
+
+    }
+}
