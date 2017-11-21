@@ -9,9 +9,9 @@
 
 namespace Zend\Mvc\Service;
 
-use Interop\Container\ContainerInterface;
 use Zend\Mvc\HttpMethodListener;
-use Zend\ServiceManager\Factory\FactoryInterface;
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
 
 class HttpMethodListenerFactory implements FactoryInterface
 {
@@ -19,9 +19,9 @@ class HttpMethodListenerFactory implements FactoryInterface
      * {@inheritdoc}
      * @return HttpMethodListener
      */
-    public function __invoke(ContainerInterface $container, $name, array $options = null)
+    public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        $config = $container->get('config');
+        $config = $serviceLocator->get('config');
 
         if (! isset($config['http_methods_listener'])) {
             return new HttpMethodListener();

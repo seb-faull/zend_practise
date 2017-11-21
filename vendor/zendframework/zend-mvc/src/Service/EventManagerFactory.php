@@ -9,9 +9,9 @@
 
 namespace Zend\Mvc\Service;
 
-use Interop\Container\ContainerInterface;
 use Zend\EventManager\EventManager;
-use Zend\ServiceManager\Factory\FactoryInterface;
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
 
 class EventManagerFactory implements FactoryInterface
 {
@@ -21,15 +21,13 @@ class EventManagerFactory implements FactoryInterface
      * Creates a new EventManager instance, seeding it with a shared instance
      * of SharedEventManager.
      *
-     * @param  ContainerInterface $container
-     * @param  string $name
-     * @param  null|array $options
+     * @param  ServiceLocatorInterface $serviceLocator
      * @return EventManager
      */
-    public function __invoke(ContainerInterface $container, $name, array $options = null)
+    public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        $shared = $container->has('SharedEventManager') ? $container->get('SharedEventManager') : null;
-
-        return new EventManager($shared);
+        $em = new EventManager();
+        $em->setSharedManager($serviceLocator->get('SharedEventManager'));
+        return $em;
     }
 }

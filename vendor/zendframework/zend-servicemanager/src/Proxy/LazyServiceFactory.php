@@ -1,17 +1,19 @@
 <?php
 /**
- * @link      http://github.com/zendframework/zend-servicemanager for the canonical source repository
- * @copyright Copyright (c) 2005-2016 Zend Technologies USA Inc. (http://www.zend.com)
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Zend\ServiceManager\Proxy;
 
-use Interop\Container\ContainerInterface;
 use ProxyManager\Factory\LazyLoadingValueHolderFactory;
 use ProxyManager\Proxy\LazyLoadingInterface;
+use Zend\ServiceManager\DelegatorFactoryInterface;
 use Zend\ServiceManager\Exception;
-use Zend\ServiceManager\Factory\DelegatorFactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
  * Delegator factory responsible of instantiating lazy loading value holder proxies of
@@ -19,17 +21,17 @@ use Zend\ServiceManager\Factory\DelegatorFactoryInterface;
  *
  * @link https://github.com/Ocramius/ProxyManager/blob/master/docs/lazy-loading-value-holder.md
  */
-final class LazyServiceFactory implements DelegatorFactoryInterface
+class LazyServiceFactory implements DelegatorFactoryInterface
 {
     /**
      * @var \ProxyManager\Factory\LazyLoadingValueHolderFactory
      */
-    private $proxyFactory;
+    protected $proxyFactory;
 
     /**
      * @var string[] map of service names to class names
      */
-    private $servicesMap;
+    protected $servicesMap;
 
     /**
      * @param LazyLoadingValueHolderFactory $proxyFactory
@@ -45,23 +47,26 @@ final class LazyServiceFactory implements DelegatorFactoryInterface
     /**
      * {@inheritDoc}
      *
-     * @return \ProxyManager\Proxy\VirtualProxyInterface
+     * @return object|\ProxyManager\Proxy\LazyLoadingInterface|\ProxyManager\Proxy\ValueHolderInterface
      */
-    public function __invoke(ContainerInterface $container, $name, callable $callback, array $options = null)
+    public function createDelegatorWithName(ServiceLocatorInterface $serviceLocator, $name, $requestedName, $callback)
     {
-        $initializer = function (&$wrappedInstance, LazyLoadingInterface $proxy) use ($callback) {
+        $initializer = function (& $wrappedInstance, LazyLoadingInterface $proxy) use ($callback) {
             $proxy->setProxyInitializer(null);
-            $wrappedInstance = $callback();
+
+            $wrappedInstance = call_user_func($callback);
 
             return true;
         };
 
-        if (isset($this->servicesMap[$name])) {
+        if (isset($this->servicesMap[$requestedName])) {
+            return $this->proxyFactory->createProxy($this->servicesMap[$requestedName], $initializer);
+        } elseif (isset($this->servicesMap[$name])) {
             return $this->proxyFactory->createProxy($this->servicesMap[$name], $initializer);
         }
 
-        throw new Exception\ServiceNotFoundException(
-            sprintf('The requested service "%s" was not found in the provided services map', $name)
+        throw new Exception\InvalidServiceNameException(
+            sprintf('The requested service "%s" was not found in the provided services map', $requestedName)
         );
     }
 }

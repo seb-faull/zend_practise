@@ -9,9 +9,9 @@
 
 namespace Zend\Mvc\Service;
 
-use Interop\Container\ContainerInterface;
 use Zend\ServiceManager\AbstractPluginManager;
-use Zend\ServiceManager\Factory\FactoryInterface;
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
 
 abstract class AbstractPluginManagerFactory implements FactoryInterface
 {
@@ -19,19 +19,24 @@ abstract class AbstractPluginManagerFactory implements FactoryInterface
 
     /**
      * Create and return a plugin manager.
-     *
      * Classes that extend this should provide a valid class for
      * the PLUGIN_MANGER_CLASS constant.
      *
-     * @param  ContainerInterface $container
-     * @param  string $name
-     * @param  null|array $options
+     * @param  ServiceLocatorInterface $serviceLocator
      * @return AbstractPluginManager
      */
-    public function __invoke(ContainerInterface $container, $name, array $options = null)
+    public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        $options            = $options ?: [];
         $pluginManagerClass = static::PLUGIN_MANAGER_CLASS;
-        return new $pluginManagerClass($container, $options);
+        /* @var $plugins AbstractPluginManager */
+        $plugins = new $pluginManagerClass;
+        $plugins->setServiceLocator($serviceLocator);
+        $configuration = $serviceLocator->get('Config');
+
+        if (isset($configuration['di']) && $serviceLocator->has('Di')) {
+            $plugins->addAbstractFactory($serviceLocator->get('DiAbstractServiceFactory'));
+        }
+
+        return $plugins;
     }
 }

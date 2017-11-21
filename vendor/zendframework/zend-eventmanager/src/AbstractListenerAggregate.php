@@ -2,9 +2,9 @@
 /**
  * Zend Framework (http://framework.zend.com/)
  *
- * @link      http://github.com/zendframework/zend-eventmanager for the canonical source repository
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
  * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
- * @license   https://github.com/zendframework/zend-eventmanager/blob/master/LICENSE.md
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Zend\EventManager;
@@ -15,9 +15,9 @@ namespace Zend\EventManager;
 abstract class AbstractListenerAggregate implements ListenerAggregateInterface
 {
     /**
-     * @var callable[]
+     * @var \Zend\Stdlib\CallbackHandler[]
      */
-    protected $listeners = [];
+    protected $listeners = array();
 
     /**
      * {@inheritDoc}
@@ -25,8 +25,9 @@ abstract class AbstractListenerAggregate implements ListenerAggregateInterface
     public function detach(EventManagerInterface $events)
     {
         foreach ($this->listeners as $index => $callback) {
-            $events->detach($callback);
-            unset($this->listeners[$index]);
+            if ($events->detach($callback)) {
+                unset($this->listeners[$index]);
+            }
         }
     }
 }

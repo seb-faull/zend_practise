@@ -13,6 +13,7 @@ use Zend\EventManager\AbstractListenerAggregate;
 use Zend\EventManager\EventManager;
 use Zend\EventManager\EventManagerAwareInterface;
 use Zend\EventManager\EventManagerInterface;
+use Zend\Mvc\ResponseSender\ConsoleResponseSender;
 use Zend\Mvc\ResponseSender\HttpResponseSender;
 use Zend\Mvc\ResponseSender\PhpEnvironmentResponseSender;
 use Zend\Mvc\ResponseSender\SendResponseEvent;
@@ -40,10 +41,10 @@ class SendResponseListener extends AbstractListenerAggregate implements
      */
     public function setEventManager(EventManagerInterface $eventManager)
     {
-        $eventManager->setIdentifiers([
+        $eventManager->setIdentifiers(array(
             __CLASS__,
             get_class($this),
-        ]);
+        ));
         $this->eventManager = $eventManager;
         $this->attachDefaultListeners();
         return $this;
@@ -58,7 +59,7 @@ class SendResponseListener extends AbstractListenerAggregate implements
      */
     public function getEventManager()
     {
-        if (! $this->eventManager instanceof EventManagerInterface) {
+        if (!$this->eventManager instanceof EventManagerInterface) {
             $this->setEventManager(new EventManager());
         }
         return $this->eventManager;
@@ -68,12 +69,11 @@ class SendResponseListener extends AbstractListenerAggregate implements
      * Attach the aggregate to the specified event manager
      *
      * @param  EventManagerInterface $events
-     * @param  int $priority
      * @return void
      */
-    public function attach(EventManagerInterface $events, $priority = 1)
+    public function attach(EventManagerInterface $events)
     {
-        $this->listeners[] = $events->attach(MvcEvent::EVENT_FINISH, [$this, 'sendResponse'], -10000);
+        $this->listeners[] = $events->attach(MvcEvent::EVENT_FINISH, array($this, 'sendResponse'), -10000);
     }
 
     /**
@@ -85,13 +85,13 @@ class SendResponseListener extends AbstractListenerAggregate implements
     public function sendResponse(MvcEvent $e)
     {
         $response = $e->getResponse();
-        if (! $response instanceof Response) {
+        if (!$response instanceof Response) {
             return; // there is no response to send
         }
         $event = $this->getEvent();
         $event->setResponse($response);
         $event->setTarget($this);
-        $this->getEventManager()->triggerEvent($event);
+        $this->getEventManager()->trigger($event);
     }
 
     /**
@@ -101,7 +101,7 @@ class SendResponseListener extends AbstractListenerAggregate implements
      */
     public function getEvent()
     {
-        if (! $this->event instanceof SendResponseEvent) {
+        if (!$this->event instanceof SendResponseEvent) {
             $this->setEvent(new SendResponseEvent());
         }
         return $this->event;
@@ -124,7 +124,7 @@ class SendResponseListener extends AbstractListenerAggregate implements
      *
      * The order in which the response sender are listed here, is by their usage:
      * PhpEnvironmentResponseSender has highest priority, because it's used most often.
-     * SimpleStreamResponseSender is not used that often, so has a lower priority.
+     * ConsoleResponseSender and SimpleStreamResponseSender are not used that often, yo they have a lower priority.
      * You can attach your response sender before or after every default response sender implementation.
      * All default response sender implementation have negative priority.
      * You are able to attach listeners without giving a priority and your response sender would be first to try.
@@ -135,6 +135,7 @@ class SendResponseListener extends AbstractListenerAggregate implements
     {
         $events = $this->getEventManager();
         $events->attach(SendResponseEvent::EVENT_SEND_RESPONSE, new PhpEnvironmentResponseSender(), -1000);
+        $events->attach(SendResponseEvent::EVENT_SEND_RESPONSE, new ConsoleResponseSender(), -2000);
         $events->attach(SendResponseEvent::EVENT_SEND_RESPONSE, new SimpleStreamResponseSender(), -3000);
         $events->attach(SendResponseEvent::EVENT_SEND_RESPONSE, new HttpResponseSender(), -4000);
     }

@@ -1,8 +1,10 @@
 <?php
 /**
- * @see       https://github.com/zendframework/zend-config for the canonical source repository
- * @copyright Copyright (c) 2005-2017 Zend Technologies USA Inc. (http://www.zend.com)
- * @license   https://github.com/zendframework/zend-config/blob/master/LICENSE.md New BSD License
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Zend\Config\Processor;
@@ -20,23 +22,16 @@ class Constant extends Token implements ProcessorInterface
      * Constant Processor walks through a Config structure and replaces all
      * PHP constants with their respective values
      *
-     * @param bool $userOnly True to process only user-defined constants,
-     *     false to process all PHP constants; defaults to true.
-     * @param string $prefix Optional prefix
-     * @param string $suffix Optional suffix
-     * @param bool $enableKeyProcessing Whether or not to enable processing of
-     *     constant values in configuration keys; defaults to false.
+     * @param bool   $userOnly              True to process only user-defined constants, false to process all PHP constants
+     * @param string $prefix                Optional prefix
+     * @param string $suffix                Optional suffix
      * @return \Zend\Config\Processor\Constant
      */
-    public function __construct($userOnly = true, $prefix = '', $suffix = '', $enableKeyProcessing = false)
+    public function __construct($userOnly = true, $prefix = '', $suffix = '')
     {
-        $this->setUserOnly((bool) $userOnly);
-        $this->setPrefix((string) $prefix);
-        $this->setSuffix((string) $suffix);
-
-        if (true === $enableKeyProcessing) {
-            $this->enableKeyProcessing();
-        }
+        $this->setUserOnly($userOnly);
+        $this->setPrefix($prefix);
+        $this->setSuffix($suffix);
 
         $this->loadConstants();
     }
@@ -53,7 +48,7 @@ class Constant extends Token implements ProcessorInterface
      * Should we use only user-defined constants?
      *
      * @param  bool $userOnly
-     * @return self
+     * @return Constant
      */
     public function setUserOnly($userOnly)
     {
@@ -70,7 +65,7 @@ class Constant extends Token implements ProcessorInterface
     {
         if ($this->userOnly) {
             $constants = get_defined_constants(true);
-            $constants = isset($constants['user']) ? $constants['user'] : [];
+            $constants = isset($constants['user']) ? $constants['user'] : array();
             $this->setTokens($constants);
         } else {
             $this->setTokens(get_defined_constants());
@@ -84,47 +79,5 @@ class Constant extends Token implements ProcessorInterface
     public function getTokens()
     {
         return $this->tokens;
-    }
-
-    /**
-     * Override processing of individual value.
-     *
-     * If the value is a string and evaluates to a class constant, returns
-     * the class constant value; otherwise, delegates to the parent.
-     *
-     * @param mixed $value
-     * @param array $replacements
-     * @return mixed
-     */
-    protected function doProcess($value, array $replacements)
-    {
-        if (! is_string($value)) {
-            return parent::doProcess($value, $replacements);
-        }
-
-        if (false === strpos($value, '::')) {
-            return parent::doProcess($value, $replacements);
-        }
-
-        // Handle class constants
-        if (defined($value)) {
-            return constant($value);
-        }
-
-        // Handle ::class notation
-        if (! preg_match('/::class$/i', $value)) {
-            return parent::doProcess($value, $replacements);
-        }
-
-        $class = substr($value, 0, strlen($value) - 7);
-        if (class_exists($class)) {
-            return $class;
-        }
-
-        // While we've matched ::class, the class does not exist, and PHP will
-        // raise an error if you try to define a constant using that notation.
-        // As such, we have something that cannot possibly be a constant, so we
-        // can safely return the value verbatim.
-        return $value;
     }
 }

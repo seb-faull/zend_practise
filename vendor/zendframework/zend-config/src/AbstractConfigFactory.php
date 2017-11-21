@@ -1,34 +1,34 @@
 <?php
 /**
- * @see       https://github.com/zendframework/zend-config for the canonical source repository
- * @copyright Copyright (c) 2005-2017 Zend Technologies USA Inc. (http://www.zend.com)
- * @license   https://github.com/zendframework/zend-config/blob/master/LICENSE.md New BSD License
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Zend\Config;
 
-use Interop\Container\ContainerInterface;
 use Traversable;
-use Zend\ServiceManager\AbstractFactoryInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Zend\ServiceManager;
 
 /**
  * Class AbstractConfigFactory
  */
-class AbstractConfigFactory implements AbstractFactoryInterface
+class AbstractConfigFactory implements ServiceManager\AbstractFactoryInterface
 {
     /**
      * @var array
      */
-    protected $configs = [];
+    protected $configs = array();
 
     /**
      * @var string[]
      */
-    protected $defaultPatterns = [
+    protected $defaultPatterns = array(
         '#config[\._-](.*)$#i',
         '#^(.*)[\\\\\._-]config$#i'
-    ];
+    );
 
     /**
      * @var string[]
@@ -36,32 +36,20 @@ class AbstractConfigFactory implements AbstractFactoryInterface
     protected $patterns;
 
     /**
-     * Determine if we can create a service with name (SM v2)
+     * Determine if we can create a service with name
      *
-     * @param ServiceLocatorInterface $serviceLocator
-     * @param $name
-     * @param $requestedName
-     * @return bool
-     */
-    public function canCreateServiceWithName(ServiceLocatorInterface $serviceLocator, $name, $requestedName)
-    {
-        return $this->canCreate($serviceLocator, $requestedName);
-    }
-
-    /**
-     * Determine if we can create a service (SM v3)
-     *
-     * @param ContainerInterface $container
+     * @param ServiceManager\ServiceLocatorInterface $serviceLocator
+     * @param string $name
      * @param string $requestedName
      * @return bool
      */
-    public function canCreate(ContainerInterface $container, $requestedName)
+    public function canCreateServiceWithName(ServiceManager\ServiceLocatorInterface $serviceLocator, $name, $requestedName)
     {
         if (isset($this->configs[$requestedName])) {
             return true;
         }
 
-        if (! $container->has('Config')) {
+        if (!$serviceLocator->has('Config')) {
             return false;
         }
 
@@ -70,32 +58,19 @@ class AbstractConfigFactory implements AbstractFactoryInterface
             return false;
         }
 
-        $config = $container->get('Config');
+        $config = $serviceLocator->get('Config');
         return isset($config[$key]);
     }
 
     /**
-     * Create service with name (SM v2)
+     * Create service with name
      *
-     * @param ServiceLocatorInterface $serviceLocator
+     * @param ServiceManager\ServiceLocatorInterface $serviceLocator
      * @param string $name
      * @param string $requestedName
      * @return string|mixed|array
      */
-    public function createServiceWithName(ServiceLocatorInterface $serviceLocator, $name, $requestedName)
-    {
-        return $this($serviceLocator, $requestedName);
-    }
-
-    /**
-     * Create service with name (SM v3)
-     *
-     * @param ContainerInterface $container
-     * @param string $requestedName
-     * @param array $options
-     * @return string|mixed|array
-     */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
+    public function createServiceWithName(ServiceManager\ServiceLocatorInterface $serviceLocator, $name, $requestedName)
     {
         if (isset($this->configs[$requestedName])) {
             return $this->configs[$requestedName];
@@ -107,7 +82,7 @@ class AbstractConfigFactory implements AbstractFactoryInterface
             return $this->configs[$key];
         }
 
-        $config = $container->get('Config');
+        $config = $serviceLocator->get('Config');
         $this->configs[$requestedName] = $this->configs[$key] = $config[$key];
         return $config[$key];
     }
@@ -119,7 +94,7 @@ class AbstractConfigFactory implements AbstractFactoryInterface
      */
     public function addPattern($pattern)
     {
-        if (! is_string($pattern)) {
+        if (!is_string($pattern)) {
             throw new Exception\InvalidArgumentException('pattern must be string');
         }
 
@@ -140,7 +115,7 @@ class AbstractConfigFactory implements AbstractFactoryInterface
             $patterns = iterator_to_array($patterns);
         }
 
-        if (! is_array($patterns)) {
+        if (!is_array($patterns)) {
             throw new Exception\InvalidArgumentException("patterns must be array or Traversable");
         }
 
@@ -162,7 +137,7 @@ class AbstractConfigFactory implements AbstractFactoryInterface
             $patterns = iterator_to_array($patterns);
         }
 
-        if (! is_array($patterns)) {
+        if (!is_array($patterns)) {
             throw new \InvalidArgumentException("patterns must be array or Traversable");
         }
 

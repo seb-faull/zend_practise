@@ -2,14 +2,15 @@
 /**
  * Zend Framework (http://framework.zend.com/)
  *
- * @link      http://github.com/zendframework/zend-eventmanager for the canonical source repository
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
  * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
- * @license   https://github.com/zendframework/zend-eventmanager/blob/master/LICENSE.md
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Zend\EventManager\Filter;
 
 use Zend\EventManager\ResponseCollection;
+use Zend\Stdlib\CallbackHandler;
 
 /**
  * Interface for intercepting filter chains
@@ -23,22 +24,23 @@ interface FilterInterface
      * @param  array $params
      * @return mixed
      */
-    public function run($context, array $params = []);
+    public function run($context, array $params = array());
 
     /**
      * Attach an intercepting filter
      *
      * @param  callable $callback
+     * @return CallbackHandler
      */
-    public function attach(callable $callback);
+    public function attach($callback);
 
     /**
      * Detach an intercepting filter
      *
-     * @param  callable $filter
+     * @param  CallbackHandler $filter
      * @return bool
      */
-    public function detach(callable $filter);
+    public function detach(CallbackHandler $filter);
 
     /**
      * Get all intercepting filters

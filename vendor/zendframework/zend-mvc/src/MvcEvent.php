@@ -10,8 +10,6 @@
 namespace Zend\Mvc;
 
 use Zend\EventManager\Event;
-use Zend\Router\RouteMatch;
-use Zend\Router\RouteStackInterface;
 use Zend\Stdlib\RequestInterface as Request;
 use Zend\Stdlib\ResponseInterface as Response;
 use Zend\View\Model\ModelInterface as Model;
@@ -49,12 +47,12 @@ class MvcEvent extends Event
     protected $result;
 
     /**
-     * @var RouteStackInterface
+     * @var Router\RouteStackInterface
      */
     protected $router;
 
     /**
-     * @var null|RouteMatch
+     * @var Router\RouteMatch
      */
     protected $routeMatch;
 
@@ -89,7 +87,7 @@ class MvcEvent extends Event
     /**
      * Get router
      *
-     * @return RouteStackInterface
+     * @return Router\RouteStackInterface
      */
     public function getRouter()
     {
@@ -99,10 +97,10 @@ class MvcEvent extends Event
     /**
      * Set router
      *
-     * @param RouteStackInterface $router
+     * @param Router\RouteStackInterface $router
      * @return MvcEvent
      */
-    public function setRouter(RouteStackInterface $router)
+    public function setRouter(Router\RouteStackInterface $router)
     {
         $this->setParam('router', $router);
         $this->router = $router;
@@ -112,7 +110,7 @@ class MvcEvent extends Event
     /**
      * Get route match
      *
-     * @return null|RouteMatch
+     * @return Router\RouteMatch
      */
     public function getRouteMatch()
     {
@@ -122,10 +120,10 @@ class MvcEvent extends Event
     /**
      * Set route match
      *
-     * @param RouteMatch $matches
+     * @param Router\RouteMatch $matches
      * @return MvcEvent
      */
-    public function setRouteMatch(RouteMatch $matches)
+    public function setRouteMatch(Router\RouteMatch $matches)
     {
         $this->setParam('route-match', $matches);
         $this->routeMatch = $matches;

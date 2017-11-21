@@ -9,8 +9,8 @@
 
 namespace Zend\Mvc\Service;
 
-use Interop\Container\ContainerInterface;
-use Zend\ServiceManager\Factory\FactoryInterface;
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
 use Zend\View\Resolver as ViewResolver;
 
 class ViewTemplatePathStackFactory implements FactoryInterface
@@ -22,14 +22,12 @@ class ViewTemplatePathStackFactory implements FactoryInterface
      * ['view_manager']['template_path_stack'] and sets the default suffix with the
      * ['view_manager']['default_template_suffix']
      *
-     * @param  ContainerInterface $container
-     * @param  string $name
-     * @param  null|array $options
+     * @param  ServiceLocatorInterface $serviceLocator
      * @return ViewResolver\TemplatePathStack
      */
-    public function __invoke(ContainerInterface $container, $name, array $options = null)
+    public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        $config = $container->get('config');
+        $config = $serviceLocator->get('Config');
 
         $templatePathStack = new ViewResolver\TemplatePathStack();
 

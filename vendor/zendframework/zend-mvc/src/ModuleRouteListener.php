@@ -11,7 +11,6 @@ namespace Zend\Mvc;
 
 use Zend\EventManager\AbstractListenerAggregate;
 use Zend\EventManager\EventManagerInterface;
-use Zend\Router\RouteMatch;
 
 class ModuleRouteListener extends AbstractListenerAggregate
 {
@@ -26,7 +25,7 @@ class ModuleRouteListener extends AbstractListenerAggregate
      */
     public function attach(EventManagerInterface $events, $priority = 1)
     {
-        $this->listeners[] = $events->attach(MvcEvent::EVENT_ROUTE, [$this, 'onRoute'], $priority);
+        $this->listeners[] = $events->attach(MvcEvent::EVENT_ROUTE, array($this, 'onRoute'), $priority);
     }
 
     /**
@@ -43,19 +42,19 @@ class ModuleRouteListener extends AbstractListenerAggregate
     public function onRoute(MvcEvent $e)
     {
         $matches = $e->getRouteMatch();
-        if (! $matches instanceof RouteMatch) {
+        if (!$matches instanceof Router\RouteMatch) {
             // Can't do anything without a route match
             return;
         }
 
         $module = $matches->getParam(self::MODULE_NAMESPACE, false);
-        if (! $module) {
+        if (!$module) {
             // No module namespace found; nothing to do
             return;
         }
 
         $controller = $matches->getParam('controller', false);
-        if (! $controller) {
+        if (!$controller) {
             // no controller matched, nothing to do
             return;
         }

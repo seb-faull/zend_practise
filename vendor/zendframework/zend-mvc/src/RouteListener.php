@@ -11,7 +11,6 @@ namespace Zend\Mvc;
 
 use Zend\EventManager\AbstractListenerAggregate;
 use Zend\EventManager\EventManagerInterface;
-use Zend\Router\RouteMatch;
 
 class RouteListener extends AbstractListenerAggregate
 {
@@ -19,12 +18,11 @@ class RouteListener extends AbstractListenerAggregate
      * Attach to an event manager
      *
      * @param  EventManagerInterface $events
-     * @param  int $priority
      * @return void
      */
-    public function attach(EventManagerInterface $events, $priority = 1)
+    public function attach(EventManagerInterface $events)
     {
-        $this->listeners[] = $events->attach(MvcEvent::EVENT_ROUTE, [$this, 'onRoute']);
+        $this->listeners[] = $events->attach(MvcEvent::EVENT_ROUTE, array($this, 'onRoute'));
     }
 
     /**
@@ -35,29 +33,28 @@ class RouteListener extends AbstractListenerAggregate
      *
      * Seeds the event with the route match on completion.
      *
-     * @param  MvcEvent $event
-     * @return null|RouteMatch
+     * @param  MvcEvent $e
+     * @return null|Router\RouteMatch
      */
-    public function onRoute(MvcEvent $event)
+    public function onRoute($e)
     {
-        $request    = $event->getRequest();
-        $router     = $event->getRouter();
+        $target     = $e->getTarget();
+        $request    = $e->getRequest();
+        $router     = $e->getRouter();
         $routeMatch = $router->match($request);
 
-        if ($routeMatch instanceof RouteMatch) {
-            $event->setRouteMatch($routeMatch);
-            return $routeMatch;
+        if (!$routeMatch instanceof Router\RouteMatch) {
+            $e->setError(Application::ERROR_ROUTER_NO_MATCH);
+
+            $results = $target->getEventManager()->trigger(MvcEvent::EVENT_DISPATCH_ERROR, $e);
+            if (count($results)) {
+                return $results->last();
+            }
+
+            return $e->getParams();
         }
 
-        $event->setName(MvcEvent::EVENT_DISPATCH_ERROR);
-        $event->setError(Application::ERROR_ROUTER_NO_MATCH);
-
-        $target  = $event->getTarget();
-        $results = $target->getEventManager()->triggerEvent($event);
-        if (! empty($results)) {
-            return $results->last();
-        }
-
-        return $event->getParams();
+        $e->setRouteMatch($routeMatch);
+        return $routeMatch;
     }
 }

@@ -9,9 +9,9 @@
 
 namespace Zend\Mvc\Service;
 
-use Interop\Container\ContainerInterface;
 use Zend\Mvc\Application;
-use Zend\ServiceManager\Factory\FactoryInterface;
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
 
 class ApplicationFactory implements FactoryInterface
 {
@@ -21,18 +21,11 @@ class ApplicationFactory implements FactoryInterface
      * Creates a Zend\Mvc\Application service, passing it the configuration
      * service and the service manager instance.
      *
-     * @param  ContainerInterface $container
-     * @param  string $name
-     * @param  null|array $options
+     * @param  ServiceLocatorInterface $serviceLocator
      * @return Application
      */
-    public function __invoke(ContainerInterface $container, $name, array $options = null)
+    public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        return new Application(
-            $container,
-            $container->get('EventManager'),
-            $container->get('Request'),
-            $container->get('Response')
-        );
+        return new Application($serviceLocator->get('Config'), $serviceLocator);
     }
 }

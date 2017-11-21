@@ -9,9 +9,9 @@
 
 namespace Zend\Mvc\Service;
 
-use Interop\Container\ContainerInterface;
 use Zend\Mvc\View\Http\InjectTemplateListener;
-use Zend\ServiceManager\Factory\FactoryInterface;
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
 
 class InjectTemplateListenerFactory implements FactoryInterface
 {
@@ -22,10 +22,10 @@ class InjectTemplateListenerFactory implements FactoryInterface
      *
      * @return InjectTemplateListener
      */
-    public function __invoke(ContainerInterface $container, $name, array $options = null)
+    public function createService(ServiceLocatorInterface $serviceLocator)
     {
         $listener = new InjectTemplateListener();
-        $config   = $container->get('config');
+        $config   = $serviceLocator->get('Config');
 
         if (isset($config['view_manager']['controller_map'])
             && (is_array($config['view_manager']['controller_map']))

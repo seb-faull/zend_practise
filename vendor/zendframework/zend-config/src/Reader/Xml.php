@@ -1,8 +1,10 @@
 <?php
 /**
- * @see       https://github.com/zendframework/zend-config for the canonical source repository
- * @copyright Copyright (c) 2005-2017 Zend Technologies USA Inc. (http://www.zend.com)
- * @license   https://github.com/zendframework/zend-config/blob/master/LICENSE.md New BSD License
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Zend\Config\Reader;
@@ -34,12 +36,12 @@ class Xml implements ReaderInterface
      *
      * @var array
      */
-    protected $textNodes = [
+    protected $textNodes = array(
         XMLReader::TEXT,
         XMLReader::CDATA,
         XMLReader::WHITESPACE,
         XMLReader::SIGNIFICANT_WHITESPACE
-    ];
+    );
 
     /**
      * fromFile(): defined by Reader interface.
@@ -51,7 +53,7 @@ class Xml implements ReaderInterface
      */
     public function fromFile($filename)
     {
-        if (! is_file($filename) || ! is_readable($filename)) {
+        if (!is_file($filename) || !is_readable($filename)) {
             throw new Exception\RuntimeException(sprintf(
                 "File '%s' doesn't exist or not readable",
                 $filename
@@ -89,7 +91,7 @@ class Xml implements ReaderInterface
     public function fromString($string)
     {
         if (empty($string)) {
-            return [];
+            return array();
         }
         $this->reader = new XMLReader();
 
@@ -130,7 +132,7 @@ class Xml implements ReaderInterface
      */
     protected function processNextElement()
     {
-        $children = [];
+        $children = array();
         $text     = '';
 
         while ($this->reader->read()) {
@@ -143,26 +145,26 @@ class Xml implements ReaderInterface
                 $name       = $this->reader->name;
 
                 if ($this->reader->isEmptyElement) {
-                    $child = [];
+                    $child = array();
                 } else {
                     $child = $this->processNextElement();
                 }
 
                 if ($attributes) {
                     if (is_string($child)) {
-                        $child = ['_' => $child];
+                        $child = array('_' => $child);
                     }
 
                     if (! is_array($child)) {
-                        $child = [];
+                        $child = array();
                     }
 
                     $child = array_merge($child, $attributes);
                 }
 
                 if (isset($children[$name])) {
-                    if (! is_array($children[$name]) || ! array_key_exists(0, $children[$name])) {
-                        $children[$name] = [$children[$name]];
+                    if (!is_array($children[$name]) || !array_key_exists(0, $children[$name])) {
+                        $children[$name] = array($children[$name]);
                     }
 
                     $children[$name][] = $child;
@@ -186,7 +188,7 @@ class Xml implements ReaderInterface
      */
     protected function getAttributes()
     {
-        $attributes = [];
+        $attributes = array();
 
         if ($this->reader->hasAttributes) {
             while ($this->reader->moveToNextAttribute()) {

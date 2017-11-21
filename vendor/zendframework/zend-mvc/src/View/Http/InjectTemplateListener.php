@@ -11,18 +11,26 @@ namespace Zend\Mvc\View\Http;
 
 use Zend\EventManager\AbstractListenerAggregate;
 use Zend\EventManager\EventManagerInterface as Events;
+use Zend\Filter\Word\CamelCaseToDash as CamelCaseToDashFilter;
 use Zend\Mvc\MvcEvent;
-use Zend\Stdlib\StringUtils;
+use Zend\Mvc\ModuleRouteListener;
 use Zend\View\Model\ModelInterface as ViewModel;
 
 class InjectTemplateListener extends AbstractListenerAggregate
 {
     /**
+     * FilterInterface/inflector used to normalize names for use as template identifiers
+     *
+     * @var mixed
+     */
+    protected $inflector;
+
+    /**
      * Array of controller namespace -> template mappings
      *
      * @var array
      */
-    protected $controllerMap = [];
+    protected $controllerMap = array();
 
     /**
      * Flag to force the use of the route match controller param
@@ -34,9 +42,9 @@ class InjectTemplateListener extends AbstractListenerAggregate
     /**
      * {@inheritDoc}
      */
-    public function attach(Events $events, $priority = 1)
+    public function attach(Events $events)
     {
-        $this->listeners[] = $events->attach(MvcEvent::EVENT_DISPATCH, [$this, 'injectTemplate'], -90);
+        $this->listeners[] = $events->attach(MvcEvent::EVENT_DISPATCH, array($this, 'injectTemplate'), -90);
     }
 
     /**
@@ -51,31 +59,49 @@ class InjectTemplateListener extends AbstractListenerAggregate
     public function injectTemplate(MvcEvent $e)
     {
         $model = $e->getResult();
-        if (! $model instanceof ViewModel) {
+        if (!$model instanceof ViewModel) {
             return;
         }
 
         $template = $model->getTemplate();
-        if (! empty($template)) {
+        if (!empty($template)) {
             return;
         }
 
         $routeMatch = $e->getRouteMatch();
-        if ($preferRouteMatchController = $routeMatch->getParam('prefer_route_match_controller', false)) {
-            $this->setPreferRouteMatchController($preferRouteMatchController);
-        }
-
         $controller = $e->getTarget();
         if (is_object($controller)) {
             $controller = get_class($controller);
         }
 
         $routeMatchController = $routeMatch->getParam('controller', '');
-        if (! $controller || ($this->preferRouteMatchController && $routeMatchController)) {
+        if (!$controller || ($this->preferRouteMatchController && $routeMatchController)) {
             $controller = $routeMatchController;
         }
 
         $template = $this->mapController($controller);
+        if (!$template) {
+            $module     = $this->deriveModuleNamespace($controller);
+
+            if ($namespace = $routeMatch->getParam(ModuleRouteListener::MODULE_NAMESPACE)) {
+                $controllerSubNs = $this->deriveControllerSubNamespace($namespace);
+                if (!empty($controllerSubNs)) {
+                    if (!empty($module)) {
+                        $module .= '/' . $controllerSubNs;
+                    } else {
+                        $module = $controllerSubNs;
+                    }
+                }
+            }
+
+            $controller = $this->deriveControllerClass($controller);
+            $template   = $this->inflectName($module);
+
+            if (!empty($template)) {
+                $template .= '/';
+            }
+            $template  .= $this->inflectName($controller);
+        }
 
         $action     = $routeMatch->getParam('action');
         if (null !== $action) {
@@ -105,59 +131,91 @@ class InjectTemplateListener extends AbstractListenerAggregate
      */
     public function mapController($controller)
     {
-        $mapped = '';
+        if (! is_string($controller)) {
+            return false;
+        }
+
         foreach ($this->controllerMap as $namespace => $replacement) {
-            if (// Allow disabling rule by setting value to false since config
+            if (
+                // Allow disabling rule by setting value to false since config
                 // merging have no feature to remove entries
                 false == $replacement
                 // Match full class or full namespace
-                || ! ($controller === $namespace || strpos($controller, $namespace . '\\') === 0)
+                || !($controller === $namespace || strpos($controller, $namespace . '\\') === 0)
             ) {
                 continue;
             }
 
+            $map = '';
             // Map namespace to $replacement if its value is string
             if (is_string($replacement)) {
-                $mapped = rtrim($replacement, '/') . '/';
+                $map = rtrim($replacement, '/') . '/';
                 $controller = substr($controller, strlen($namespace) + 1) ?: '';
-                break;
             }
+
+            //strip Controller namespace(s) (but not classname)
+            $parts = explode('\\', $controller);
+            array_pop($parts);
+            $parts = array_diff($parts, array('Controller'));
+            //strip trailing Controller in class name
+            $parts[] = $this->deriveControllerClass($controller);
+            $controller = implode('/', $parts);
+
+            $template = trim($map . $controller, '/');
+
+            //inflect CamelCase to dash
+            return $this->inflectName($template);
         }
-
-        //strip Controller namespace(s) (but not classname)
-        $parts = explode('\\', $controller);
-        array_pop($parts);
-        $parts = array_diff($parts, ['Controller']);
-        //strip trailing Controller in class name
-        $parts[] = $this->deriveControllerClass($controller);
-        $controller = implode('/', $parts);
-
-        $template = trim($mapped . $controller, '/');
-
-        // inflect CamelCase to dash
-        return $this->inflectName($template);
+        return false;
     }
 
     /**
      * Inflect a name to a normalized value
-     *
-     * Inlines the logic from zend-filter's Word\CamelCaseToDash filter.
      *
      * @param  string $name
      * @return string
      */
     protected function inflectName($name)
     {
-        if (StringUtils::hasPcreUnicodeSupport()) {
-            $pattern     = ['#(?<=(?:\p{Lu}))(\p{Lu}\p{Ll})#', '#(?<=(?:\p{Ll}|\p{Nd}))(\p{Lu})#'];
-            $replacement = ['-\1', '-\1'];
-        } else {
-            $pattern     = ['#(?<=(?:[A-Z]))([A-Z]+)([A-Z][a-z])#', '#(?<=(?:[a-z0-9]))([A-Z])#'];
-            $replacement = ['\1-\2', '-\1'];
+        if (!$this->inflector) {
+            $this->inflector = new CamelCaseToDashFilter();
         }
-
-        $name = preg_replace($pattern, $replacement, $name);
+        $name = $this->inflector->filter($name);
         return strtolower($name);
+    }
+
+    /**
+     * Determine the top-level namespace of the controller
+     *
+     * @param  string $controller
+     * @return string
+     */
+    protected function deriveModuleNamespace($controller)
+    {
+        if (!strstr($controller, '\\')) {
+            return '';
+        }
+        $module = substr($controller, 0, strpos($controller, '\\'));
+        return $module;
+    }
+
+    /**
+     * @param $namespace
+     * @return string
+     */
+    protected function deriveControllerSubNamespace($namespace)
+    {
+        if (!strstr($namespace, '\\')) {
+            return '';
+        }
+        $nsArray = explode('\\', $namespace);
+
+        // Remove the first two elements representing the module and controller directory.
+        $subNsArray = array_slice($nsArray, 2);
+        if (empty($subNsArray)) {
+            return '';
+        }
+        return implode('/', $subNsArray);
     }
 
     /**

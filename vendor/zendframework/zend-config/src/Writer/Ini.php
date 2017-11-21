@@ -1,8 +1,10 @@
 <?php
 /**
- * @see       https://github.com/zendframework/zend-config for the canonical source repository
- * @copyright Copyright (c) 2005-2017 Zend Technologies USA Inc. (http://www.zend.com)
- * @license   https://github.com/zendframework/zend-config/blob/master/LICENSE.md New BSD License
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Zend\Config\Writer;
@@ -54,8 +56,8 @@ class Ini extends AbstractWriter
      * If set to true, the INI file is rendered without sections completely
      * into the global namespace of the INI file.
      *
-     * @param bool $withoutSections
-     * @return self
+     * @param  bool $withoutSections
+     * @return Ini
      */
     public function setRenderWithoutSectionsFlags($withoutSections)
     {
@@ -89,7 +91,7 @@ class Ini extends AbstractWriter
             $config = $this->sortRootElements($config);
 
             foreach ($config as $sectionName => $data) {
-                if (! is_array($data)) {
+                if (!is_array($data)) {
                     $iniString .= $sectionName
                                .  ' = '
                                .  $this->prepareValue($data)
@@ -112,12 +114,12 @@ class Ini extends AbstractWriter
      * @param  array $parents
      * @return string
      */
-    protected function addBranch(array $config, $parents = [])
+    protected function addBranch(array $config, $parents = array())
     {
         $iniString = '';
 
         foreach ($config as $key => $value) {
-            $group = array_merge($parents, [$key]);
+            $group = array_merge($parents, array($key));
 
             if (is_array($value)) {
                 $iniString .= $this->addBranch($value, $group);
@@ -161,7 +163,7 @@ class Ini extends AbstractWriter
      */
     protected function sortRootElements(array $config)
     {
-        $sections = [];
+        $sections = array();
 
         // Remove sections from config array.
         foreach ($config as $key => $value) {

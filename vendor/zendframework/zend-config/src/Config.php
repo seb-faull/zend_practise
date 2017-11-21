@@ -1,8 +1,10 @@
 <?php
 /**
- * @see       https://github.com/zendframework/zend-config for the canonical source repository
- * @copyright Copyright (c) 2005-2017 Zend Technologies USA Inc. (http://www.zend.com)
- * @license   https://github.com/zendframework/zend-config/blob/master/LICENSE.md New BSD License
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Zend\Config;
@@ -33,7 +35,7 @@ class Config implements Countable, Iterator, ArrayAccess
      *
      * @var array
      */
-    protected $data = [];
+    protected $data = array();
 
     /**
      * Used when unsetting values during iteration to ensure we do not skip
@@ -128,7 +130,7 @@ class Config implements Countable, Iterator, ArrayAccess
      */
     public function __clone()
     {
-        $array = [];
+        $array = array();
 
         foreach ($this->data as $key => $value) {
             if ($value instanceof self) {
@@ -148,7 +150,7 @@ class Config implements Countable, Iterator, ArrayAccess
      */
     public function toArray()
     {
-        $array = [];
+        $array = array();
         $data  = $this->data;
 
         /** @var self $value */
@@ -183,7 +185,7 @@ class Config implements Countable, Iterator, ArrayAccess
      */
     public function __unset($name)
     {
-        if (! $this->allowModifications) {
+        if (!$this->allowModifications) {
             throw new Exception\InvalidArgumentException('Config is read only');
         } elseif (isset($this->data[$name])) {
             unset($this->data[$name]);
@@ -322,7 +324,7 @@ class Config implements Countable, Iterator, ArrayAccess
      * - Items in $merge with STRING keys will overwrite current values.
      *
      * @param  Config $merge
-     * @return self
+     * @return Config
      */
     public function merge(Config $merge)
     {
@@ -379,6 +381,6 @@ class Config implements Countable, Iterator, ArrayAccess
      */
     public function isReadOnly()
     {
-        return ! $this->allowModifications;
+        return !$this->allowModifications;
     }
 }

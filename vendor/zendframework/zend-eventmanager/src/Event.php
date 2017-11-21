@@ -2,9 +2,9 @@
 /**
  * Zend Framework (http://framework.zend.com/)
  *
- * @link      http://github.com/zendframework/zend-eventmanager for the canonical source repository
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
  * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
- * @license   https://github.com/zendframework/zend-eventmanager/blob/master/LICENSE.md
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Zend\EventManager;
@@ -32,7 +32,7 @@ class Event implements EventInterface
     /**
      * @var array|ArrayAccess|object The event parameters
      */
-    protected $params = [];
+    protected $params = array();
 
     /**
      * @var bool Whether or not to stop propagation
@@ -91,17 +91,19 @@ class Event implements EventInterface
      * Overwrites parameters
      *
      * @param  array|ArrayAccess|object $params
+     * @return Event
      * @throws Exception\InvalidArgumentException
      */
     public function setParams($params)
     {
-        if (! is_array($params) && ! is_object($params)) {
+        if (!is_array($params) && !is_object($params)) {
             throw new Exception\InvalidArgumentException(
                 sprintf('Event parameters must be an array or object; received "%s"', gettype($params))
             );
         }
 
         $this->params = $params;
+        return $this;
     }
 
     /**
@@ -127,7 +129,7 @@ class Event implements EventInterface
     {
         // Check in params that are arrays or implement array access
         if (is_array($this->params) || $this->params instanceof ArrayAccess) {
-            if (! isset($this->params[$name])) {
+            if (!isset($this->params[$name])) {
                 return $default;
             }
 
@@ -135,7 +137,7 @@ class Event implements EventInterface
         }
 
         // Check in normal objects
-        if (! isset($this->params->{$name})) {
+        if (!isset($this->params->{$name})) {
             return $default;
         }
         return $this->params->{$name};
@@ -145,20 +147,24 @@ class Event implements EventInterface
      * Set the event name
      *
      * @param  string $name
+     * @return Event
      */
     public function setName($name)
     {
         $this->name = (string) $name;
+        return $this;
     }
 
     /**
      * Set the event target/context
      *
      * @param  null|string|object $target
+     * @return Event
      */
     public function setTarget($target)
     {
         $this->target = $target;
+        return $this;
     }
 
     /**
@@ -166,23 +172,25 @@ class Event implements EventInterface
      *
      * @param  string|int $name
      * @param  mixed $value
+     * @return Event
      */
     public function setParam($name, $value)
     {
         if (is_array($this->params) || $this->params instanceof ArrayAccess) {
             // Arrays or objects implementing array access
             $this->params[$name] = $value;
-            return;
+        } else {
+            // Objects
+            $this->params->{$name} = $value;
         }
-
-        // Objects
-        $this->params->{$name} = $value;
+        return $this;
     }
 
     /**
      * Stop further event propagation
      *
      * @param  bool $flag
+     * @return void
      */
     public function stopPropagation($flag = true)
     {

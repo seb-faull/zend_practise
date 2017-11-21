@@ -30,12 +30,12 @@ abstract class AbstractRestfulController extends AbstractController
     /**
      * @var array
      */
-    protected $contentTypes = [
-        self::CONTENT_TYPE_JSON => [
+    protected $contentTypes = array(
+        self::CONTENT_TYPE_JSON => array(
             'application/hal+json',
             'application/json'
-        ]
-    ];
+        )
+    );
 
     /**
      * Name of request or query parameter containing identifier
@@ -45,30 +45,16 @@ abstract class AbstractRestfulController extends AbstractController
     protected $identifierName = 'id';
 
     /**
-     * Flag to pass to json_decode and/or Zend\Json\Json::decode.
-     *
-     * The flags in Zend\Json\Json::decode are integers, but when evaluated
-     * in a boolean context map to the flag passed as the second parameter
-     * to json_decode(). As such, you can specify either the Zend\Json\Json
-     * constant or the boolean value. By default, starting in v3, we use
-     * the boolean value, and cast to integer if using Zend\Json\Json::decode.
-     *
-     * Default value is boolean true, meaning JSON should be cast to
-     * associative arrays (vs objects).
-     *
-     * Override the value in an extending class to set the default behavior
-     * for your class.
-     *
-     * @var int|bool
+     * @var int From Zend\Json\Json
      */
-    protected $jsonDecodeType = true;
+    protected $jsonDecodeType = Json::TYPE_ARRAY;
 
     /**
      * Map of custom HTTP methods and their handlers
      *
      * @var array
      */
-    protected $customHttpMethodsMap = [];
+    protected $customHttpMethodsMap = array();
 
     /**
      * Set the route match/query parameter name containing the identifier
@@ -102,9 +88,9 @@ abstract class AbstractRestfulController extends AbstractController
     {
         $this->response->setStatusCode(405);
 
-        return [
+        return array(
             'content' => 'Method Not Allowed'
-        ];
+        );
     }
 
     /**
@@ -117,9 +103,9 @@ abstract class AbstractRestfulController extends AbstractController
     {
         $this->response->setStatusCode(405);
 
-        return [
+        return array(
             'content' => 'Method Not Allowed'
-        ];
+        );
     }
 
     /**
@@ -134,9 +120,9 @@ abstract class AbstractRestfulController extends AbstractController
     {
         $this->response->setStatusCode(405);
 
-        return [
+        return array(
             'content' => 'Method Not Allowed'
-        ];
+        );
     }
 
     /**
@@ -149,9 +135,9 @@ abstract class AbstractRestfulController extends AbstractController
     {
         $this->response->setStatusCode(405);
 
-        return [
+        return array(
             'content' => 'Method Not Allowed'
-        ];
+        );
     }
 
     /**
@@ -163,9 +149,9 @@ abstract class AbstractRestfulController extends AbstractController
     {
         $this->response->setStatusCode(405);
 
-        return [
+        return array(
             'content' => 'Method Not Allowed'
-        ];
+        );
     }
 
     /**
@@ -181,9 +167,9 @@ abstract class AbstractRestfulController extends AbstractController
     {
         $this->response->setStatusCode(405);
 
-        return [
+        return array(
             'content' => 'Method Not Allowed'
-        ];
+        );
     }
 
     /**
@@ -201,9 +187,9 @@ abstract class AbstractRestfulController extends AbstractController
     {
         $this->response->setStatusCode(405);
 
-        return [
+        return array(
             'content' => 'Method Not Allowed'
-        ];
+        );
     }
 
     /**
@@ -220,9 +206,9 @@ abstract class AbstractRestfulController extends AbstractController
     {
         $this->response->setStatusCode(405);
 
-        return [
+        return array(
             'content' => 'Method Not Allowed'
-        ];
+        );
     }
 
     /**
@@ -238,9 +224,9 @@ abstract class AbstractRestfulController extends AbstractController
     {
         $this->response->setStatusCode(405);
 
-        return [
+        return array(
             'content' => 'Method Not Allowed'
-        ];
+        );
     }
 
     /**
@@ -256,9 +242,9 @@ abstract class AbstractRestfulController extends AbstractController
     {
         $this->response->setStatusCode(405);
 
-        return [
+        return array(
             'content' => 'Method Not Allowed'
-        ];
+        );
     }
 
     /**
@@ -272,9 +258,9 @@ abstract class AbstractRestfulController extends AbstractController
     {
         $this->response->setStatusCode(405);
 
-        return [
+        return array(
             'content' => 'Method Not Allowed'
-        ];
+        );
     }
 
     /**
@@ -286,9 +272,9 @@ abstract class AbstractRestfulController extends AbstractController
     {
         $this->response->setStatusCode(404);
 
-        return [
+        return array(
             'content' => 'Page not found'
-        ];
+        );
     }
 
     /**
@@ -307,7 +293,8 @@ abstract class AbstractRestfulController extends AbstractController
     public function dispatch(Request $request, Response $response = null)
     {
         if (! $request instanceof HttpRequest) {
-            throw new Exception\InvalidArgumentException('Expected an HTTP request');
+            throw new Exception\InvalidArgumentException(
+                    'Expected an HTTP request');
         }
 
         return parent::dispatch($request, $response);
@@ -329,7 +316,8 @@ abstract class AbstractRestfulController extends AbstractController
              * @todo Determine requirements for when route match is missing.
              *       Potentially allow pulling directly from request metadata?
              */
-            throw new Exception\DomainException('Missing route matches; unsure how to retrieve action');
+            throw new Exception\DomainException(
+                    'Missing route matches; unsure how to retrieve action');
         }
 
         $request = $e->getRequest();
@@ -359,14 +347,13 @@ abstract class AbstractRestfulController extends AbstractController
             // DELETE
             case 'delete':
                 $id = $this->getIdentifier($routeMatch, $request);
+                $data = $this->processBodyContent($request);
 
                 if ($id !== false) {
                     $action = 'delete';
                     $return = $this->delete($id);
                     break;
                 }
-
-                $data = $this->processBodyContent($request);
 
                 $action = 'deleteList';
                 $return = $this->deleteList($data);
@@ -459,16 +446,16 @@ abstract class AbstractRestfulController extends AbstractController
      *
      * @param Request $request
      * @return mixed
-     * @throws Exception\DomainException If a JSON request was made, but no
-     *    method for parsing JSON is available.
      */
     public function processPostData(Request $request)
     {
         if ($this->requestHasContentType($request, self::CONTENT_TYPE_JSON)) {
-            return $this->create($this->jsonDecode($request->getContent()));
+            $data = Json::decode($request->getContent(), $this->jsonDecodeType);
+        } else {
+            $data = $request->getPost()->toArray();
         }
 
-        return $this->create($request->getPost()->toArray());
+        return $this->create($data);
     }
 
     /**
@@ -482,7 +469,7 @@ abstract class AbstractRestfulController extends AbstractController
     {
         /** @var $headerContentType \Zend\Http\Header\ContentType */
         $headerContentType = $request->getHeaders()->get('content-type');
-        if (! $headerContentType) {
+        if (!$headerContentType) {
             return false;
         }
 
@@ -531,7 +518,7 @@ abstract class AbstractRestfulController extends AbstractController
      */
     public function addHttpMethodHandler($method, /* Callable */ $handler)
     {
-        if (! is_callable($handler)) {
+        if (!is_callable($handler)) {
             throw new Exception\InvalidArgumentException(sprintf(
                 'Invalid HTTP method handler: must be a callable; received "%s"',
                 (is_object($handler) ? get_class($handler) : gettype($handler))
@@ -548,7 +535,7 @@ abstract class AbstractRestfulController extends AbstractController
      * Attempts to see if an identifier was passed in either the URI or the
      * query string, returning it if found. Otherwise, returns a boolean false.
      *
-     * @param  \Zend\Router\RouteMatch $routeMatch
+     * @param  \Zend\Mvc\Router\RouteMatch $routeMatch
      * @param  Request $request
      * @return false|mixed
      */
@@ -573,14 +560,12 @@ abstract class AbstractRestfulController extends AbstractController
      *
      * If the content-type indicates a JSON payload, the payload is immediately
      * decoded and the data returned. Otherwise, the data is passed to
-     * parse_str(). If that function returns a single-member array with a empty
-     * value, the method assumes that we have non-urlencoded content and
+     * parse_str(). If that function returns a single-member array with a key
+     * of "0", the method assumes that we have non-urlencoded content and
      * returns the raw content; otherwise, the array created is returned.
      *
      * @param  mixed $request
      * @return object|string|array
-     * @throws Exception\DomainException If a JSON request was made, but no
-     *    method for parsing JSON is available.
      */
     protected function processBodyContent($request)
     {
@@ -588,49 +573,19 @@ abstract class AbstractRestfulController extends AbstractController
 
         // JSON content? decode and return it.
         if ($this->requestHasContentType($request, self::CONTENT_TYPE_JSON)) {
-            return $this->jsonDecode($request->getContent());
+            return Json::decode($content, $this->jsonDecodeType);
         }
 
         parse_str($content, $parsedParams);
 
-        // If parse_str fails to decode, or we have a single element with empty value
-        if (! is_array($parsedParams) || empty($parsedParams)
-            || (1 == count($parsedParams) && '' === reset($parsedParams))
+        // If parse_str fails to decode, or we have a single element with key
+        // 0, return the raw content.
+        if (!is_array($parsedParams)
+            || (1 == count($parsedParams) && isset($parsedParams[0]))
         ) {
             return $content;
         }
 
         return $parsedParams;
-    }
-
-    /**
-     * Decode a JSON string.
-     *
-     * Uses json_decode by default. If that is not available, checks for
-     * availability of Zend\Json\Json, and uses that if present.
-     *
-     * Otherwise, raises an exception.
-     *
-     * Marked protected to allow usage from extending classes.
-     *
-     * @param string
-     * @return mixed
-     * @throws Exception\DomainException if no JSON decoding functionality is
-     *     available.
-     */
-    protected function jsonDecode($string)
-    {
-        if (function_exists('json_decode')) {
-            return json_decode($string, (bool) $this->jsonDecodeType);
-        }
-
-        if (class_exists(Json::class)) {
-            return Json::decode($string, (int) $this->jsonDecodeType);
-        }
-
-        throw new Exception\DomainException(sprintf(
-            'Unable to parse JSON request, due to missing ext/json and/or %s',
-            Json::class
-        ));
     }
 }
