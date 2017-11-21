@@ -23,6 +23,7 @@ class IndexController extends AbstractActionController
             $form->setData($this->request->getPost());
 
             if ($form->isValid()) {
+                $data = $form->getData();
                 /**
                  *  @ToDo Save post here
                  */
