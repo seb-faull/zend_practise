@@ -36,7 +36,14 @@ class Add extends Form
             1 => 'PHP',
             2 => 'Zend Framework',
             3 => 'MySQL',
-
         ));
+
+        // Submit Button
+        $submit = new Element\Submit('submit');
+        $submit->setValue('Add Post');
+        $submit->setAttribute('class', 'btn btn-primary');
+
+
+
     }
 }
