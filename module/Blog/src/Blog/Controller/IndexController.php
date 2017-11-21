@@ -2,6 +2,7 @@
 
 namespace Blog\Controller;
 
+use Blog\Form\Add;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 
@@ -18,14 +19,10 @@ class IndexController extends AbstractActionController
 
         if ($this->request->isPost()) {
             $form->setData($this->request->getPost());
-
-            //* @ToDo Save Blog Post
-
         }
 
         return new ViewModel(array(
             'form' => $form,
         ));
-
     }
 }
