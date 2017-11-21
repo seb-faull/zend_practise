@@ -5,6 +5,7 @@ namespace Blog\InputFilter;
 use Zend\InputFilter\Input;
 use Zend\InputFilter\InputFilter;
 use Zend\Validator\ValidatorChain;
+use Zend\Session\ValidatorChain;
 
 
 class AddPost extends InputFilter
@@ -21,6 +22,17 @@ class AddPost extends InputFilter
 
         $content = new Input('content');
         $content->setRequired(true);
+    }
+
+    protected function getContentValidatorChain()
+    {
+        $stringLength = new StringLength();
+        $stringLength->setMin(10);
+
+        $validatorChain = new ValidatorChain();
+        $validatorChain->attach($stringLength);
+
+        return $validatorChain;
     }
 
     protected function getSlugValidatorChain()
