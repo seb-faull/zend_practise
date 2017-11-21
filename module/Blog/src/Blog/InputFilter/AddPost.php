@@ -22,6 +22,7 @@ class AddPost extends InputFilter
 
         $content = new Input('content');
         $content->setRequired(true);
+        $content->setValidatorChain($this->getContentValidatorChain());
     }
 
     protected function getContentValidatorChain()
