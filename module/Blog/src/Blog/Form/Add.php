@@ -43,7 +43,10 @@ class Add extends Form
         $submit->setValue('Add Post');
         $submit->setAttribute('class', 'btn btn-primary');
 
-
-
+        $this->add($title);
+        $this->add($slug);
+        $this->add($content);
+        $this->add($category);
+        $this->add($submit);
     }
 }
