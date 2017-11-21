@@ -12,3 +12,18 @@ echo $this->form()->openTag($form);
 <div class="form-group">
     <?php echo $this->formRow($form->get('title')); ?>
 </div>
+
+<div class="form-group">
+    <?php echo $this->formRow($form->get('slug')); ?>
+</div>
+
+<div class="form-group">
+    <?php echo $this->formRow($form->get('content')); ?>
+</div>
+
+<div class="form-group">
+    <?php echo $this->formRow($form->get('category')); ?>
+</div>
+
+<?php echo $this->formSubmit($form->get('submit')); ?>
+<?php echo $this->form()->closeTag(); ?>
