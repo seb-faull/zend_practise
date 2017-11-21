@@ -8,3 +8,7 @@ $form->prepare();
 echo $this->form()->openTag($form);
 
 ?>
+
+<div class="form-group">
+    <?php echo $this->formRow($form->get('title')); ?>
+</div>
