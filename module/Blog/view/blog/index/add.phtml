@@ -1,1 +1,10 @@
 <h1>Add Blog Post</h1>
+
+<?php
+
+/** @var \Zend\Form\Form $form */
+$form = $this->form;
+$form->prepare();
+echo $this->form()->openTag($form);
+
+?>
