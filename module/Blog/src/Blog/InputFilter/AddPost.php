@@ -15,14 +15,29 @@ class AddPost extends InputFilter
         $title = new Input('title');
         $title->setRequired(true);
         $title->setValidatorChain($this->getTitleValidatorChain());
+        $title->setFilterChain($this->getStringTrimFilterChain());
 
         $slug = new Input('slug');
         $slug->setRequired(true);
         $slug->setValidatorChain($this->getSlugValidatorChain());
+        $slug->setFilterChain($this->getStringTrimFilterChain());
 
         $content = new Input('content');
         $content->setRequired(true);
         $content->setValidatorChain($this->getContentValidatorChain());
+        $content->setFilterChain($this->getStringTrimFilterChain());
+
+        $this->add($title);
+        $this->add($slug;
+        $this->add($content);
+    }
+
+    protected function getStringTrimFilterChain()
+    {
+        $filterChain = new FilterChain();
+        $filterChain->attach(new StringTrim());
+
+        return $filterChain;
     }
 
     protected function getContentValidatorChain()
