@@ -16,5 +16,13 @@ class Add extends Form
         $title = new Element\Text('title');
         $title->setLabel('Title');
         $title->setAttribute('class', 'form-control');
+
+        $slug = new Element\Text('slug');
+        $slug->setLabel('Slug');
+        $slug->setAttribute('class', 'form-control');
+
+        $content = new Element\Textarea('content');
+        $content->setLabel('Content');
+        $content->setAttribute('class', 'form-control');
     }
 }
