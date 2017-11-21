@@ -2,15 +2,18 @@
 
 namespace Blog\InputFilter;
 
-use Zend\InputFilter\Input;
+use Zend\Filter\FilterChain;
+use Zend\Filter\StringTrim;
+use Zend\I18n\Validator\Alnum;
 use Zend\InputFilter\InputFilter;
+use Zend\InputFilter\Input;
+use Zend\Validator\Regex;
+use Zend\Validator\StringLength;
 use Zend\Validator\ValidatorChain;
-use Zend\Session\ValidatorChain;
-
 
 class AddPost extends InputFilter
 {
-    public function __construct();
+    public function __construct()
     {
         $title = new Input('title');
         $title->setRequired(true);
@@ -28,53 +31,61 @@ class AddPost extends InputFilter
         $content->setFilterChain($this->getStringTrimFilterChain());
 
         $this->add($title);
-        $this->add($slug;
+        $this->add($slug);
         $this->add($content);
     }
 
-    protected function getStringTrimFilterChain()
-    {
-        $filterChain = new FilterChain();
-        $filterChain->attach(new StringTrim());
-
-        return $filterChain;
-    }
-
+    /**
+     * @return ValidatorChain
+     */
     protected function getContentValidatorChain()
     {
         $stringLength = new StringLength();
         $stringLength->setMin(10);
-
         $validatorChain = new ValidatorChain();
         $validatorChain->attach($stringLength);
 
         return $validatorChain;
     }
 
+    /**
+     * @return ValidatorChain
+     */
     protected function getSlugValidatorChain()
     {
-      // Title's Minimum & Maximum character length
-      $stringLength = new StringLength();
-      $stringLength->setMin(5);
-      $stringLength->setMax(50);
+        $stringLength = new StringLength();
+        $stringLength->setMin(2);
 
-      $validatorChain = new ValidatorChain();
-      $validatorChain->attach($stringLength);
+        $validatorChain = new ValidatorChain();
+        $validatorChain->attach(new Regex("/^[a-z0-9\\-]+$/"));
+        $validatorChain->attach($stringLength);
 
-      return $validatorChain;
+        return $validatorChain;
     }
 
+    /**
+     * @return ValidatorChain
+     */
     protected function getTitleValidatorChain()
     {
-        // Title's Minimum & Maximum character length
         $stringLength = new StringLength();
         $stringLength->setMin(5);
-        $stringLength->setMax(50);
 
         $validatorChain = new ValidatorChain();
         $validatorChain->attach(new Alnum(true));
         $validatorChain->attach($stringLength);
 
         return $validatorChain;
+    }
+
+    /**
+     * @return FilterChain
+     */
+    protected function getStringTrimFilterChain()
+    {
+        $filterChain = new FilterChain();
+        $filterChain->attach(new StringTrim());
+
+        return $filterChain;
     }
 }
