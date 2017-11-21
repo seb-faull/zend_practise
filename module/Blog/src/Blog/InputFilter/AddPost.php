@@ -18,6 +18,9 @@ class AddPost extends InputFilter
         $slug = new Input('slug');
         $slug->setRequired(true);
         $slug->setValidatorChain($this->getSlugValidatorChain());
+
+        $content = new Input('content');
+        $content->setRequired(true);
     }
 
     protected function getSlugValidatorChain()
