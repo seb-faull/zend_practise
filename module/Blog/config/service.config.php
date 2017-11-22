@@ -2,4 +2,9 @@
 
 namespace Blog;
 
-return array();
+return array(
+    'invokables' => array(
+        'Blog\Service\BlogService' => 'Blog\Service\BlogServiceImpl',
+    ),
+
+);

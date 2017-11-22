@@ -25,10 +25,8 @@ class IndexController extends AbstractActionController
             $form->setData($this->request->getPost());
 
             if ($form->isValid()) {
-
-                /**
-                 *  @ToDo Save post here
-                 */
+                $blogService = $this->getServiceLocator()->get('Blog\Service\BlogService');
+                $blogService->save($blogPost);
             }
         }
 
