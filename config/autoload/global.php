@@ -11,9 +11,6 @@
  * file.
  */
 
-// This file should have a file extension of .dist
-// so that this sensitive information isn't version controlled.
-// But for the purpose of learning I have left this open.
 return array(
     'service_manager' => array(
         'factories' => array(

@@ -4,6 +4,7 @@ namespace Blog\Form;
 
 use Zend\Form\Form;
 use Zend\Form\Element;
+use Zend\Stdlib\Hydrator\ClassMethods;
 
 class Add extends Form
 {
@@ -43,4 +44,4 @@ class Add extends Form
         $this->add($category);
         $this->add($submit);
     }
-}
+} 

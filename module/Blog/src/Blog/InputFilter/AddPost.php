@@ -88,4 +88,4 @@ class AddPost extends InputFilter
 
         return $filterChain;
     }
-}
+} 
